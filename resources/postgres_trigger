@@ -1,0 +1,11 @@
+CREATE OR REPLACE FUNCTION get_meter_location()
+RETURNS trigger AS $update_meter_location$
+ BEGIN
+ 	NEW.meter_point = ST_TRANSFORM(ST_SetSRID(ST_MAKEPOINT(NEW.longitude,NEW.latitude),4269),32661);
+ 	RETURN NEW;
+ END;
+$update_meter_location$ LANGUAGE plpgsql; 
+
+CREATE TRIGGER update_meter_location BEFORE INSERT OR UPDATE ON events
+    FOR EACH ROW EXECUTE PROCEDURE get_meter_location();
+
