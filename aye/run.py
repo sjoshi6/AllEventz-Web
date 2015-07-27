@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 
 # Connect to an existing database
-conn = psycopg2.connect("dbname=aye_test user=rohan")
+conn = psycopg2.connect("dbname=aye_test user=API-server")
 
 
 REQUIRED_CREATION_FIELDS = ['event_name', 'event_description', 'longitude',
@@ -17,9 +17,11 @@ REQUIRED_LOOKUP_FIELDS = ['longitude', 'latitude', 'distance']
 
 @app.route('/new_event', methods=['GET', 'POST'])
 def add_event():
+    print "incoming!"
     if request.method == 'POST':
         try:
             data_dict = request.get_json()
+            print data_dict
             table_data = {}
 
             for key in REQUIRED_CREATION_FIELDS:

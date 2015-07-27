@@ -1,0 +1,17 @@
+CREATE TABLE events (
+event_id bigint NOT NULL,
+title character varying(50),
+descr character varying(300),
+longitude double precision,
+latitude double precision,
+meter_point geometry(Point,32661)
+);
+
+CREATE SEQUENCE event_id_seq;
+
+ALTER SEQUENCE event_id_seq OWNED BY events.event_id;
+
+ALTER TABLE ONLY events ALTER COLUMN event_id SET DEFAULT nextval('event_id_seq'::regclass);
+
+ALTER TABLE ONLY events
+ADD CONSTRAINT events_pkey PRIMARY KEY (event_id);
