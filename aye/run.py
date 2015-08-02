@@ -3,14 +3,22 @@ import psycopg2
 import psycopg2.extras
 import sys
 
+from CustomParser import ConfigReader
+
 app = Flask(__name__)
 
+config_reader = ConfigReader('aye/config.ini')
+
+state = 'Prod' if sys.argv[1] == 'prod' else 'Dev'
+
+config_params = config_reader.get_config_section_map(state)
+
+db_string = 'dbname=%s user=%s' % (config_params['db_name'],
+                                   config_params['db_user'])
 
 # Connect to an existing database
-conn = psycopg2.connect("dbname=aye_test user=API-server",
+conn = psycopg2.connect(db_string,
                         cursor_factory=psycopg2.extras.RealDictCursor)
-# conn = psycopg2.connect("dbname=aye_test user=rohan", cursor_factory=psycopg2.extras.RealDictCursor)
-
 
 REQUIRED_CREATION_FIELDS = ['event_name', 'event_description', 'longitude',
                             'latitude']
