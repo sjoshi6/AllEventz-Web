@@ -7,6 +7,7 @@ app = Flask(__name__)
 
 # Connect to an existing database
 conn = psycopg2.connect("dbname=aye_test user=API-server")
+# conn = psycopg2.connect("dbname=aye_test user=rohan")
 
 
 REQUIRED_CREATION_FIELDS = ['event_name', 'event_description', 'longitude',
@@ -51,21 +52,27 @@ def find_event():
         try:
             data_dict = request.get_json()
 
-            query_dict = {}
+        except BadRequest:
+            print "JSON parse error"
+            # Bad Request
+            abort(400)
 
-            for key in REQUIRED_LOOKUP_FIELDS:
-                if key not in data_dict:
-                    abort(400)
-                query_dict[key] = data_dict[key]
+        query_dict = {}
 
+        for key in REQUIRED_LOOKUP_FIELDS:
+            if key not in data_dict:
+                abort(400)
+            query_dict[key] = data_dict[key]
+
+        try:
             cur = conn.cursor()
 
-            cur.execute("select * from events where \
-                        ST_DWithin(meter_point,\
-                            ST_TRANSFORM(\
-                                        ST_SetSRID(ST_MAKEPOINT(%(longitude)s,%(latitude)s,%(distance)s),4269),\
-                                        32661),\
-                            206)",
+            cur.execute("select title, descr, longitude, latitude, ST_Distance(meter_point, \
+                    ST_TRANSFORM(ST_SetSRID(ST_MAKEPOINT(%(longitude)s,%(latitude)s),4269),32661)) as distance \
+            from events where ST_DWithin(meter_point,\
+                ST_TRANSFORM(ST_SetSRID(ST_MAKEPOINT(%(longitude)s,%(latitude)s),4269),32661),\
+                %(distance)s)\
+                ORDER BY distance",
                         query_dict)
 
             events_in_radius = cur.fetchall()
@@ -74,7 +81,8 @@ def find_event():
             # return "ok"
             return jsonify(**return_obj)
         except:
-            print "Error"
+            print "DB Error"
+            abort(500)
 
 
 if __name__ == '__main__':
