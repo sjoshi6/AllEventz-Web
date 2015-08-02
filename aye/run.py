@@ -1,13 +1,15 @@
 from flask import Flask, request, jsonify, abort
 import psycopg2
+import psycopg2.extras
 import sys
 
 app = Flask(__name__)
 
 
 # Connect to an existing database
-conn = psycopg2.connect("dbname=aye_test user=API-server")
-# conn = psycopg2.connect("dbname=aye_test user=rohan")
+conn = psycopg2.connect("dbname=aye_test user=API-server",
+                        cursor_factory=psycopg2.extras.RealDictCursor)
+# conn = psycopg2.connect("dbname=aye_test user=rohan", cursor_factory=psycopg2.extras.RealDictCursor)
 
 
 REQUIRED_CREATION_FIELDS = ['event_name', 'event_description', 'longitude',
@@ -67,12 +69,13 @@ def find_event():
         try:
             cur = conn.cursor()
 
-            cur.execute("select title, descr, longitude, latitude, ST_Distance(meter_point, \
-                    ST_TRANSFORM(ST_SetSRID(ST_MAKEPOINT(%(longitude)s,%(latitude)s),4269),32661)) as distance \
-            from events where ST_DWithin(meter_point,\
-                ST_TRANSFORM(ST_SetSRID(ST_MAKEPOINT(%(longitude)s,%(latitude)s),4269),32661),\
-                %(distance)s)\
-                ORDER BY distance",
+            cur.execute("select title, descr, longitude, latitude, \
+                        ST_Distance(meter_point, \
+                            ST_TRANSFORM(ST_SetSRID(ST_MAKEPOINT(%(longitude)s,%(latitude)s),4269),32661)) as distance \
+                        from events where ST_DWithin(meter_point,\
+                            ST_TRANSFORM(ST_SetSRID(ST_MAKEPOINT(%(longitude)s,%(latitude)s),4269),32661),\
+                            %(distance)s)\
+                        ORDER BY distance",
                         query_dict)
 
             events_in_radius = cur.fetchall()
