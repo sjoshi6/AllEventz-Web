@@ -1,0 +1,1 @@
+gunicorn --workers 4 --bind unix:aye_server.sock -m 777 wsgi:aye_app &

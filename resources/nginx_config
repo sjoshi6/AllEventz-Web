@@ -1,0 +1,12 @@
+server {
+    listen 9000;
+    server_name 45.55.27.229;
+
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/home/API-server/AllEventz-Web/aye_server.sock;
+    }
+}
+
+
