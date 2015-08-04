@@ -1,0 +1,8 @@
+CREATE SEQUENCE event_type_id_seq;
+
+CREATE TABLE event_type (
+type_id bigint NOT NULL DEFAULT nextval('event_type_id_seq') PRIMARY KEY,
+type_name VARCHAR(50) UNIQUE NOT NULL
+);
+
+ALTER SEQUENCE event_type_id_seq OWNED BY event_type.type_id;

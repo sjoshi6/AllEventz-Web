@@ -1,17 +1,19 @@
+CREATE SEQUENCE event_id_seq;
+
 CREATE TABLE events (
-event_id bigint NOT NULL,
-title character varying(50),
-descr character varying(300),
+event_id bigint NOT NULL DEFAULT nextval('event_id_seq') PRIMARY KEY,
+name VARCHAR(100),
+description VARCHAR(500),
+event_date date,
+event_time time,
+event_type VARCHAR(50) references event_type(type_name),
+creator_id bigint references users(user_id),
 longitude double precision,
 latitude double precision,
 meter_point geometry(Point,32661)
 );
 
-CREATE SEQUENCE event_id_seq;
-
 ALTER SEQUENCE event_id_seq OWNED BY events.event_id;
 
-ALTER TABLE ONLY events ALTER COLUMN event_id SET DEFAULT nextval('event_id_seq'::regclass);
-
-ALTER TABLE ONLY events
-ADD CONSTRAINT events_pkey PRIMARY KEY (event_id);
+ISO time format: HH:MM:SS
+ISO Date format: YYYY-MM-DD
