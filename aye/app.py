@@ -1,4 +1,5 @@
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, jsonify, abort, g
+from decorators import is_authenticated
 import psycopg2
 import psycopg2.extras
 import sys
@@ -23,10 +24,11 @@ def create_app(env='Dev'):
                                        config_params['db_user'])
 
     # Connect to an existing database
-    conn = psycopg2.connect(db_string,
-                            cursor_factory=psycopg2.extras.RealDictCursor)
+    g.db_conn = psycopg2.connect(db_string,
+                                 cursor_factory=psycopg2.extras.RealDictCursor)
 
     @app.route('/new_event', methods=['GET', 'POST'])
+    @is_authenticated
     def add_event():
         print "incoming!"
         if request.method == 'POST':
@@ -40,11 +42,11 @@ def create_app(env='Dev'):
                         abort(400)
                     table_data[key] = data_dict[key]
 
-                cur = conn.cursor()
+                cur = g.db_conn.cursor()
                 cur.execute("INSERT INTO events(title,descr,longitude,latitude) \
                             VALUES (%(event_name)s,%(event_description)s, \
                             %(longitude)s,%(latitude)s)", table_data)
-                conn.commit()
+                g.db_conn.commit()
 
                 return_obj = {}
                 return_obj['message'] = "Event Created"
@@ -74,7 +76,7 @@ def create_app(env='Dev'):
                 query_dict[key] = data_dict[key]
 
             try:
-                cur = conn.cursor()
+                cur = g.db_conn.cursor()
 
                 cur.execute("select title, descr, longitude, latitude, \
                             ST_Distance(meter_point, \
